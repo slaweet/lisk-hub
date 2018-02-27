@@ -131,27 +131,29 @@ node('lisk-hub') {
       try {
         ansiColor('xterm') {
           withCredentials([string(credentialsId: 'lisk-hub-testnet-passphrase', variable: 'TESTNET_PASSPHRASE')]) {
-            sh '''
-            N=${EXECUTOR_NUMBER:-0}; N=$((N+1))
+            withCredentials([usernamePassword(credentialsId: 'lisk-hub-browserstack-credentials', usernameVariable: 'BROWSERSTACK_USERNAME', passwordVariable: 'BROWSERSTACK_PASSWORD')]) {
+              sh '''
+              N=${EXECUTOR_NUMBER:-0}; N=$((N+1))
 
-            # End to End test configuration
-            export DISPLAY=:1$N
-            Xvfb :1$N -ac -screen 0 1280x1024x24 &
+              # End to End test configuration
+              export DISPLAY=:1$N
+              Xvfb :1$N -ac -screen 0 1280x1024x24 &
 
-            # Run end-to-end tests
+              # Run end-to-end tests
 
-            if [ -z $CHANGE_BRANCH ]; then
-              npm run --silent e2e-test -- --params.baseURL file://$WORKSPACE/app/build/index.html --params.liskCoreURL https://testnet.lisk.io --cucumberOpts.tags @testnet --params.useTestnetPassphrase true
-            else
-              echo "Skipping @testnet end-to-end tests because we're not on 'development' branch"
-            fi
-            npm run --silent e2e-test -- --params.baseURL file://$WORKSPACE/app/build/index.html --params.liskCoreURL http://127.0.0.1:400$N
-            if [ -z $CHANGE_BRANCH ]; then
-              npm run --silent e2e-test -- --params.baseURL file://$WORKSPACE/app/build/index.html --cucumberOpts.tags @testnet --params.useTestnetPassphrase true --params.network testnet
-            else
-              echo "Skipping @testnet end-to-end tests because we're not on 'development' branch"
-            fi
-            '''
+              if [ -z $CHANGE_BRANCH ]; then
+                npm run --silent e2e-test -- --params.baseURL file://$WORKSPACE/app/build/index.html --params.liskCoreURL https://testnet.lisk.io --cucumberOpts.tags @testnet --params.useTestnetPassphrase true
+              else
+                echo "Skipping @testnet end-to-end tests because we're not on 'development' branch"
+              fi
+              npm run --silent e2e-test -- --params.baseURL file://$WORKSPACE/app/build/index.html --params.liskCoreURL http://127.0.0.1:400$N --seleniumAddress http://hub-cloud.browserstack.com/wd/hub --directConnect false --capabilities.browserstack.user $BROWSERSTACK_USERNAME --capabilities.browserstack.key $BROWSERSTACK_PASSWORD
+              if [ -z $CHANGE_BRANCH ]; then
+                npm run --silent e2e-test -- --params.baseURL file://$WORKSPACE/app/build/index.html --cucumberOpts.tags @testnet --params.useTestnetPassphrase true --params.network testnet
+              else
+                echo "Skipping @testnet end-to-end tests because we're not on 'development' branch"
+              fi
+              '''
+            }
           }
         }
       } catch (err) {
