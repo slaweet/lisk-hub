@@ -49,3 +49,37 @@ Cypress.Commands.add('autologin', (passphrase, network) => {
   localStorage.setItem('liskCoreUrl', network);
   localStorage.setItem('loginKey', passphrase);
 });
+
+Cypress.Commands.add('hwWalletAutoLogin', (account, network) => {
+  localStorage.setItem('liskCoreUrl', network);
+  // localStorage.setItem('hwWalletAutoLogin', true);
+
+  cy.window().its('hwWalletUtils').then((hwWalletUtils) => {
+    console.log('ipcD', hwWalletUtils);
+    cy.stub(hwWalletUtils.TransportU2F, 'create', () => {
+      console.log('CY created');
+      return 'hehe';
+    });
+
+    class DposLedger {
+      // eslint-disable-next-line class-methods-use-this
+      getPubKey() {
+        console.log('CY getPubKey');
+        return new Promise(resolve => resolve(account));
+      }
+    }
+    cy.stub(hwWalletUtils, 'DposLedger', DposLedger);
+
+    class LedgerAccount {
+      // eslint-disable-next-line class-methods-use-this
+      coinIndex() {
+        console.log('CY coinIndex');
+      }
+      // eslint-disable-next-line class-methods-use-this
+      account() {
+        console.log('CY accoun');
+      }
+    }
+    cy.stub(hwWalletUtils, 'LedgerAccount', LedgerAccount);
+  });
+});

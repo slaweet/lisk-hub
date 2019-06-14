@@ -3,7 +3,7 @@ import TransportU2F from '@ledgerhq/hw-transport-u2f';
 import TrezorConnect from 'trezor-connect';
 import i18next from 'i18next';
 import { LedgerAccount, SupportedCoin, DposLedger } from 'dpos-ledger-api';
-import { HW_CMD, HW_MSG, calculateSecondPassphraseIndex } from '../constants/hwConstants';
+import { HW_CMD, HW_MSG, calculateSecondPassphraseIndex, loginType } from '../constants/hwConstants';
 import { loadingStarted, loadingFinished } from './loading';
 import { getTransactionBytes, calculateTxId, getBufferToHex } from './rawTransactionWrapper';
 import { PLATFORM_TYPES, getPlatformType } from './platform';
@@ -149,9 +149,9 @@ const platformHendler = async (command) => {
 
   if (platform === PLATFORM_TYPES.BROWSER) { // Used only during dev.
     let resCommand;
-    if (command.hwType === loginTypes.ledgerNano) {
+    if (command.hwType === loginType.ledger) {
       resCommand = await executeLedgerCommandForWeb(command);
-    } else if (command.hwType === loginTypes.trezor) {
+    } else if (command.hwType === loginType.trezor) {
       resCommand = await executeTrezorCommandForWeb(command);
     } else {
       throw new Error(i18next.t('Hardware Wallet Type not recognized'));

@@ -9,6 +9,7 @@ const urls = {
   transactions: '/explorer/transactions',
   register: '/register',
   login: '/login',
+  hwWalletLogin: '/hw-wallet-login',
   secondPassphrase: '/second-passphrase',
   registerDelegate: '/register-delegate',
   delegates: '/delegates',

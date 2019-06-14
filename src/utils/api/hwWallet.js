@@ -15,6 +15,15 @@ import { HW_MSG, models, loginType } from '../../constants/hwConstants';
 import { getAPIClient } from './lsk/network';
 import { splitVotesIntoRounds } from '../voting';
 
+if (window.Cypress) {
+  window.hwWalletUtils = {
+    TransportU2F,
+    DposLedger,
+    LedgerAccount,
+  };
+  console.log('winin', window.hwWalletUtils);
+}
+
 const util = require('util');
 
 const getLedgerTransportU2F = async () => TransportU2F.create();
@@ -58,8 +67,10 @@ const getFullDerivationPath = index => `m/44'/134'/${index}'`;
 const executeLedgerCommandForWeb = async (command) => {
   let transport = null;
   try {
+    console.log('try');
     transport = await getLedgerTransportU2F();
   } catch (e) {
+    console.log('try', e);
     throw new Error(HW_MSG.LEDGER_NO_TRANSPORT_AVAILABLE_U2F);
   }
 
@@ -138,6 +149,7 @@ const executeTrezorCommandForWeb = async (command) => {
 };
 
 const platformHendler = async (command) => {
+  console.log('platformHendler');
   const platform = getPlatformType();
 
   if (platform === PLATFORM_TYPES.ELECTRON) {
@@ -147,7 +159,9 @@ const platformHendler = async (command) => {
   if (platform === PLATFORM_TYPES.BROWSER) { // Used only during dev.
     let resCommand;
     if (command.hwType === loginType.ledger) {
+      console.log('executeLedgerCommandForWeb');
       resCommand = await executeLedgerCommandForWeb(command);
+      console.log('executeLedgerCommandForWeb after');
     } else if (command.hwType === loginType.trezor) {
       resCommand = await executeTrezorCommandForWeb(command);
     } else {
@@ -173,6 +187,7 @@ export const getHWPublicKeyFromIndex = async (deviceId, loginType, index, showOn
     hwType: loginType,
     data: { deviceId, index, showOnDevice },
   };
+  console.log('getHWPublicKeyFromIndex');
   return platformHendler(command);
 };
 
@@ -257,14 +272,17 @@ export const signTransactionWithHW = async (tx, account, pin) => {
 export const getHWAccountInfo = async (activePeer, deviceId, loginType, accountIndex) => {
   let error;
   let publicKey;
+  console.log('getHWAccountInfo', deviceId, loginType, accountIndex);
 
   if (loginType === loginTypes.ledgerNano) {
     publicKey = await getHWPublicKeyFromIndex(deviceId, loginType, accountIndex);
     error = publicKey ? '' : this.props.t('No Public Key');
   } else {
     [error, publicKey] = await to(getHWPublicKeyFromIndex(deviceId, loginType, accountIndex));
+    console.log('else', error, publicKey);
   }
 
+  console.log('err', error, publicKey, loginTypes);
   if (error) {
     throw error;
   }
