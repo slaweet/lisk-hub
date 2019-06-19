@@ -27,8 +27,6 @@ class Setting extends React.Component {
     this.handleTokenToggle = this.handleTokenToggle.bind(this);
   }
 
-  // TODO: Remove ignore comment when enabling BTC
-  // istanbul ignore next
   handleTokenToggle({ target: { name } }) {
     const { settings } = this.props;
     const newSettings = {
